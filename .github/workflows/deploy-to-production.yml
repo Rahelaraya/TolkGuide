@@ -1,0 +1,32 @@
+name: Deploy to Production
+
+on:
+  pull_request:
+    branches:
+      - production
+    types:
+      - closed
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Publish
+        run: dotnet publish ./YourSolution.sln -c Release -o ./publish
+
+      # TODO: ersätt detta med din riktiga production-deploy
+      - name: Deploy to Production Environment
+        run: |
+          echo "Deploying to Production Environment..."
+          # samma deploy som dev, fast mot prod-server

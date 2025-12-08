@@ -1,0 +1,10 @@
+{
+  "ConnectionStrings": {
+    "UserDatabase": "<YOUR_CONNECTION_STRING>"
+  },
+  "AppSettings": {
+    "Token": "<YOUR_JWT_SECRET>",
+    "Issuer": "<YOUR_APP_NAME>",
+    "Audience": "<YOUR_AUDIENCE>"
+  }
+}
