@@ -1,45 +1,7 @@
-# Clean Architecture .NET Backend Boilerplate
+En person kan skapa konto som kund (vill hitta tolk).
 
-Ett återanvändbart backend-startprojekt byggt med **Clean Architecture i .NET**.  
-Projektet innehåller **JWT-autentisering**, **EF Core + SQL** och ett tydligt lagerupplägg för skalbara applikationer.
+En person kan också skapa konto som tolk (eller både och).
 
----
+En tolk kan tala flera språk.
 
-project-structure:
-  API:
-    - Controllers
-    - Requests
-    - Responses
-    - Dependency Injection
-  Application:
-    - Use Cases
-    - DTOs
-    - Services
-    - Interfaces
-  Domain:
-    - Entities
-    - Value Objects
-    - Domain Rules
-  Infrastructure:
-    - EF Core
-    - SQL
-    - Repository Implementations
-  Test:
-    - Unit Tests (optional)
-  Solution:
-    - Clean-API.sln
-
----
-
-## 🧱 Arkitektur
-
-| Lager | Ansvar |
-|------|--------|
-| **Domain** | Entiteter, logik, regler |
-| **Application** | Use cases, DTOs, Services |
-| **Infrastructure** | Databas, EF Core, Repositories |
-| **API** | Controllers, routing, authentication |
-
-✔ API kommunicerar **aldrig direkt** med databasen  
-✔ All logik passerar via **Application-lagret**
-
+En kund kan lägga en förfrågan/bokning om tolk.
