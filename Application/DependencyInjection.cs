@@ -12,7 +12,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // Här kan du senare registrera MediatR, Validators osv.
+        //registrera MediatR, Validators osv.
         return services;
     }
 }

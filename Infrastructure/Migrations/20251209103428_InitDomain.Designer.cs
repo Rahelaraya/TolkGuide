@@ -4,6 +4,7 @@ using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    partial class UserDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209103428_InitDomain")]
+    partial class InitDomain
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -95,13 +98,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Customers");
                 });
@@ -137,13 +134,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Interpreters");
                 });
@@ -235,28 +226,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Language");
                 });
 
-            modelBuilder.Entity("Domain.Models.Customer", b =>
-                {
-                    b.HasOne("Domain.Models.User", "User")
-                        .WithOne("Customer")
-                        .HasForeignKey("Domain.Models.Customer", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Domain.Models.Interpreter", b =>
-                {
-                    b.HasOne("Domain.Models.User", "User")
-                        .WithOne("Interpreter")
-                        .HasForeignKey("Domain.Models.Interpreter", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Models.InterpreterLanguage", b =>
                 {
                     b.HasOne("Domain.Models.Interpreter", "Interpreter")
@@ -291,13 +260,6 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Models.Language", b =>
                 {
                     b.Navigation("InterpreterLanguages");
-                });
-
-            modelBuilder.Entity("Domain.Models.User", b =>
-                {
-                    b.Navigation("Customer");
-
-                    b.Navigation("Interpreter");
                 });
 #pragma warning restore 612, 618
         }
