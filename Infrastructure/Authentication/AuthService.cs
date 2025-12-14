@@ -22,6 +22,12 @@ public class AuthService : IAuthService
         _configuration = configuration;
     }
 
+    public AuthService(UserDbContext context)
+    {
+        _context = context;
+    }
+
+    // -------------------- LOGIN --------------------
     public async Task<TokenResponseDto?> LoginAsync(UserDto request)
     {
         var user = await _context.Users
@@ -39,37 +45,79 @@ public class AuthService : IAuthService
         return await CreateTokenResponse(user);
     }
 
+    // -------------------- REGISTER --------------------
     public async Task<User?> RegisterAsync(UserDto request)
     {
+        // 1. Kolla om användarnamnet redan finns
         if (await _context.Users.AnyAsync(u => u.Username == request.Username))
             return null;
 
-        var user = new User();
-        var hasher = new PasswordHasher<User>();
+        // 2. Skapa user-objekt
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Username = request.Username,
+            Role = string.IsNullOrWhiteSpace(request.Role) ? "Customer" : request.Role
+        };
 
-        user.Username = request.Username;
+        // 3. Hasha lösenordet
+        var hasher = new PasswordHasher<User>();
         user.PasswordHash = hasher.HashPassword(user, request.Password);
 
+        // 4. Spara användaren först (måste finnas innan vi kan sätta UserId i Customer/Interpreter)
         _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // 5. Skapa Customer eller Interpreter beroende på roll
+        if (user.Role == "Customer")
+        {
+            var customer = new Customer
+            {
+                UserId = user.Id,
+                Name = request.Username,              // tills du har mer detaljer
+                ContactPerson = request.Username,
+                PhoneNumber = "N/A",
+                Email = "N/A",
+                Address = "N/A"
+            };
+
+            _context.Customers.Add(customer);
+        }
+        else if (user.Role == "Interpreter")
+        {
+            var interpreter = new Interpreter
+            {
+                UserId = user.Id,
+                FirstName = request.Username,         // tills du har FirstName/LastName i UserDto
+                LastName = "N/A",
+                PhoneNumber = "N/A",
+                Email = "N/A",
+                City = "N/A",
+                IsActive = true
+            };
+
+            _context.Interpreters.Add(interpreter);
+        }
+
+        // 6. Spara kopplad profil
         await _context.SaveChangesAsync();
 
         return user;
     }
 
-    // 🔹 IMPLEMENTATION AV RefreshTokensAsync
+    // -------------------- REFRESH TOKEN --------------------
     public async Task<TokenResponseDto?> RefreshTokensAsync(RefreshTokenRequestDto request)
     {
-        // hitta användare på refresh token
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
 
         if (user is null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             return null; // ogiltig eller utgången token
 
-        // generera nytt access + refresh token
         return await CreateTokenResponse(user);
     }
 
+    // -------------------- TOKEN-HJÄLPARE --------------------
     private async Task<TokenResponseDto> CreateTokenResponse(User user)
     {
         return new TokenResponseDto
@@ -90,7 +138,8 @@ public class AuthService : IAuthService
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username)
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Role, user.Role ?? "Customer")
         };
 
         var creds = new SigningCredentials(
