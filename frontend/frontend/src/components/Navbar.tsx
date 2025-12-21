@@ -1,44 +1,56 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { isLoggedIn, logout, onAuthChanged } from "../auth";
 import { useEffect, useState } from "react";
+import "./Navbar.css";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [loggedIn, setLoggedIn] = useState(isLoggedIn());
   const [username, setUsername] = useState(localStorage.getItem("username"));
 
-  useEffect(() => {
-    return onAuthChanged(() => {
-      setLoggedIn(isLoggedIn());
-      setUsername(localStorage.getItem("username"));
-    });
-  }, []);
+useEffect(() => {
+  return onAuthChanged(() => {
+    setLoggedIn(isLoggedIn());
+    setUsername(localStorage.getItem("username"));
+  });
+}, []);
 
-  return (
-    <div style={{ padding: 12, borderBottom: "1px solid #eee" }}>
-      <NavLink to="/" style={{ marginRight: 12 }}>Start</NavLink>
-      <NavLink to="/bookings" style={{ marginRight: 12 }}>Bookings</NavLink>
-      <NavLink to="/interpreters" style={{ marginRight: 12 }}>Interpreters</NavLink>
+return (
+  <nav className="navbar">
+    <div className="nav-left">
+      <NavLink to="/" className="brand">
+        TolkGuide
+      </NavLink>
 
-{!loggedIn && (
-  <>
-    <NavLink to="/login" style={{ marginRight: 12 }}>Logga in</NavLink>
-    <NavLink to="/register" style={{ marginRight: 12 }}>Skapa konto</NavLink>
-  </>
-)}
-
-{loggedIn && username && (
-  <>
-    <span style={{ marginLeft: 12, marginRight: 12, fontWeight: 700 }}>
-      Välkommen, {username}
-    </span>
-
-    <button onClick={() => { logout(); navigate("/"); }}>
-      Logga ut
-    </button>
-  </>
-)}
-
+      {loggedIn && (
+        <>
+          <NavLink to="/bookings">Bookings</NavLink>
+          <NavLink to="/interpreters">Interpreters</NavLink>
+         
+        </>
+      )}
     </div>
-  );
-}
+
+    <div className="nav-right">
+      {!loggedIn ? (
+        <>
+          <NavLink to="/login">Logga in</NavLink>
+          <NavLink to="/register">Skapa konto</NavLink>
+        </>
+      ) : (
+        <>
+          <span className="welcome">Välkommen, {username ?? ""}</span>
+          <button
+            className="logoutBtn"
+            onClick={() => {
+              logout();
+              navigate("/");
+            }}
+          >
+            Logga ut
+          </button>
+        </>
+      )}
+    </div>
+  </nav>
+)};

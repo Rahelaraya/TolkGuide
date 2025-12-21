@@ -1,6 +1,7 @@
-﻿using System;
-using Application.Dtos;
+﻿using Application.Dtos;
 using Infrastructure.Authentication;
+using Microsoft.Extensions.Configuration;
+using System;
 using Test;
 using Xunit;
 
@@ -11,7 +12,17 @@ public class AuthServiceTests
     {
         // Arrange
         var context = TestDbContextFactory.Create(); // in-memory DB
-        var service = new AuthService(context);
+        var config = new ConfigurationBuilder()
+       .AddInMemoryCollection(new Dictionary<string, string?>
+       {
+           ["AppSettings:Token"] = "THIS_IS_A_TEST_TOKEN_123456789012345678901234567890",
+           ["AppSettings:Issuer"] = "TolkGuide",
+           ["AppSettings:Audience"] = "TolkGuideClient"
+       })
+       .Build();
+
+        var service = new AuthService(context, config);
+
 
         var dto = new UserDto
         {

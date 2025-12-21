@@ -1,11 +1,17 @@
-import { useState } from "react";
-import { BrowserRouter, Routes, Route, NavLink, Link } from "react-router-dom";
-import { login, register } from "./api/authApi";
-import { notifyAuthChanged } from "./auth";
-import { useNavigate } from "react-router-dom";
-import Navbar from "./components/Navbar";
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+
+import InterpretersPage from "./pages/InterpretersPage";
+import InterpreterPublicProfile from "./pages/InterpreterPublicProfile";
+
+import BookingsList from "./pages/BookingsList";
+import CreateBooking from "./pages/CreateBooking";
+import BookingDetail from "./pages/BookingDetail";
 
 
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 
 const styles = {
@@ -221,254 +227,37 @@ const demo: CardItem[] = [
 ];
 
 
+// import RegisterPage from "./pages/RegisterPage"; // om du har
+
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/bookings" element={<SimplePage title="Bookings" />} />
-        <Route path="/interpreters" element={<SimplePage title="Tolkar" />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
+ <Routes>
+  {/* Alla sidor MED navbar */}
+  <Route element={<Layout />}>
+    <Route path="/" element={<InterpretersPage />} />
+    <Route path="/interpreters" element={<InterpretersPage />} />
 
-function HomePage() {
-  return (
-    <div style={styles.page}>
-      <Navbar />
+    <Route path="/interpreters/:id" element={<InterpreterPublicProfile />} />
 
-      <div style={styles.container}>
-        <div style={styles.hero}>
-          <h1 style={styles.h1}>
-            Hitta rätt tolk <br /> snabbt och enkelt
-          </h1>
-          <div style={styles.subtitle}>
-            Skapa bokningar, filtrera tolkar efter språk och stad, och följ status på dina uppdrag.
-          </div>
+    <Route path="/bookings" element={<BookingsList />} />
+    <Route path="/bookings/create" element={<CreateBooking />} />
+    <Route path="/bookings/:id" element={<BookingDetail />} />
 
-          <div style={styles.searchWrap}>
-            <input style={styles.searchInput} placeholder='Sök: "Arabiska", "Stockholm", "Sjukhus"...' />
-            <button style={styles.searchBtn}>Sök</button>
-          </div>
+    
+  </Route>
 
-          <div style={styles.chips}>
-            <button style={styles.chip}>Bokningar</button>
-            <button style={styles.chip}>Tolkar</button>
-            <button style={styles.chip}>Språk</button>
-            <button style={styles.chip}>På plats</button>
-            <button style={styles.chip}>Online</button>
-          </div>
+  {/* Auth-sidor (utan krav på login) */}
+  <Route path="/login" element={<LoginPage />} />
+  <Route path="/register" element={<RegisterPage />} />
 
-          <div style={styles.sectionTitle}>Snabbgenvägar</div>
-          <div style={styles.grid}>
-            {demo.map((x) => (
-              <div key={x.name} style={styles.card}>
-                <div style={styles.cardImg} />
-                <div style={styles.cardBody}>
-                  <p style={styles.cardName}>{x.name}</p>
-                  <div style={styles.cardMeta}>
-                    {x.city} • {x.mode}
-                  </div>
-
-                  <div style={styles.badgeRow}>
-                    {x.tags.map((t, i) => (
-                      <span
-                        key={t}
-                        style={{
-                          ...styles.badge,
-                          ...(i === 0 ? styles.badgeHot : null),
-                        }}
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SimplePage({ title }: { title: string }) {
-  return (
-    <div style={styles.page}>
-      <Navbar />
-      <div style={styles.container}>
-        <div style={{ padding: "26px 0" }}>
-          <h2 style={{ margin: 0, fontSize: 28, fontWeight: 950 }}>{title}</h2>
-          <p style={{ color: "rgba(17,24,39,0.72)" }}>
-            Här bygger vi nästa steg (List + Create kopplat till API).
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-function LoginPage() {
-  const navigate = useNavigate();
- const [username, setUsername] = useState("");
-const [password, setPassword] = useState("");
-const [role, setRole] = useState<"Customer" | "Interpreter">("Customer");
-const [msg, setMsg] = useState("");
+  {/* fallback */}
+  <Route path="*" element={<div>Sidan finns inte</div>} />
+</Routes>
+  
+)};
 
 
-  return (
-    <div style={styles.page}>
-      <Navbar />
-      <div style={styles.container}>
-        <div style={styles.authCard}>
-          <h2 style={{ margin: 0, fontSize: 28, fontWeight: 950 }}>Logga in</h2>
-
-   <form
-  onSubmit={async (e) => {
-    e.preventDefault();
-    setMsg("");
-
-   try {
-  const tokenResponse = await login(username, password, role);
-
-  localStorage.setItem("accessToken", tokenResponse.accessToken);
-  localStorage.setItem("refreshToken", tokenResponse.refreshToken);
-  localStorage.setItem("username", username); 
-
-  notifyAuthChanged();
-  navigate("/");
-
-  setMsg("✅ Inloggad!");
-} catch (err: any) {
-  setMsg("❌ " + (err?.message ?? "Login failed"));
-}
-
-  }}
->
-
-            <div style={{ marginTop: 14 }}>
-              <label style={{ display: "grid", gap: 6, marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: "rgba(17,24,39,0.75)", fontWeight: 700 }}>
-                  Användarnamn
-                </span>
-                <input
-                  style={styles.field}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </label>
-
-<label style={{ display: "grid", gap: 6, marginBottom: 12 }}>
-  <span style={{ fontSize: 13, color: "rgba(17,24,39,0.75)", fontWeight: 700 }}>
-    Lösenord
-  </span>
-  <input
-    style={styles.field}
-    type="password"
-    value={password}                 
-    onChange={(e) => setPassword(e.target.value)} 
-  />
-</label>
 
 
-              <button style={{ ...styles.searchBtn, width: "100%" }} type="submit">
-                Logga in
-              </button>
 
-              {msg && <div style={{ marginTop: 12, fontWeight: 800 }}>{msg}</div>}
-
-              <div style={{ marginTop: 12, fontSize: 14, color: "rgba(17,24,39,0.75)" }}>
-                Har du inget konto? <Link to="/register">Skapa konto</Link>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RegisterPage() {
-  const [username, setUsername] = useState("");
-  const [role, setRole] = useState<"Customer" | "Interpreter">("Customer");
-  const [password, setPassword] = useState("");
-  const [msg, setMsg] = useState("");
-
-  return (
-    <div style={styles.page}>
-      <Navbar />
-      <div style={styles.container}>
-        <div style={styles.authCard}>
-          <h2 style={{ margin: 0, fontSize: 28, fontWeight: 950 }}>Skapa konto</h2>
-
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setMsg("");
-
-              try {
-                await register(username, password, role);
-                setMsg("✅ Konto skapat! Nu kan du logga in.");
-              } catch (err: any) {
-                setMsg("❌ " + (err?.message ?? "Register failed"));
-              }
-            }}
-          >
-            <div style={{ marginTop: 14 }}>
-              <label style={{ display: "grid", gap: 6, marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: "rgba(17,24,39,0.75)", fontWeight: 700 }}>
-                  Användarnamn
-                </span>
-                <input
-                  style={styles.field}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </label>
-
-              <label style={{ display: "grid", gap: 6, marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: "rgba(17,24,39,0.75)", fontWeight: 700 }}>
-                  Roll
-                </span>
-                <select
-                  style={styles.field}
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as "Customer" | "Interpreter")}
-                >
-                  <option value="Customer">Customer</option>
-                  <option value="Interpreter">Interpreter</option>
-                </select>
-              </label>
-
-              <label style={{ display: "grid", gap: 6, marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: "rgba(17,24,39,0.75)", fontWeight: 700 }}>
-                  Lösenord
-                </span>
-                <input
-                  style={styles.field}
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </label>
-
-              <button style={{ ...styles.searchBtn, width: "100%" }} type="submit">
-                Skapa konto
-              </button>
-
-              {msg && <div style={{ marginTop: 12, fontWeight: 800 }}>{msg}</div>}
-
-              <div style={{ marginTop: 12, fontSize: 14, color: "rgba(17,24,39,0.75)" }}>
-                Har du redan konto? <Link to="/login">Logga in</Link>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
 

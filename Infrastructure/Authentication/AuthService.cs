@@ -16,15 +16,11 @@ public class AuthService : IAuthService
     private readonly UserDbContext _context;
     private readonly IConfiguration _configuration;
 
+    // ✅ Behåll bara EN constructor (så _configuration aldrig blir null)
     public AuthService(UserDbContext context, IConfiguration configuration)
     {
         _context = context;
         _configuration = configuration;
-    }
-
-    public AuthService(UserDbContext context)
-    {
-        _context = context;
     }
 
     // -------------------- LOGIN --------------------
@@ -48,60 +44,70 @@ public class AuthService : IAuthService
     // -------------------- REGISTER --------------------
     public async Task<User?> RegisterAsync(UserDto request)
     {
-        // 1. Kolla om användarnamnet redan finns
+        // 1) Kolla om användarnamnet redan finns
         if (await _context.Users.AnyAsync(u => u.Username == request.Username))
             return null;
 
-        // 2. Skapa user-objekt
+        // 2) Normalisera roll (och ta höjd för stavfel "Cusomer")
+        var roleInput = (request.Role ?? "Customer").Trim();
+        var normalizedRole =
+            roleInput.Equals("Interpreter", StringComparison.OrdinalIgnoreCase) ? "Interpreter" :
+            roleInput.Equals("Customer", StringComparison.OrdinalIgnoreCase) ? "Customer" :
+            roleInput.Equals("Cusomer", StringComparison.OrdinalIgnoreCase) ? "Customer" : // ✅ temporärt stöd
+            "Customer";
+
+        // 3) Skapa user-objekt
         var user = new User
         {
             Id = Guid.NewGuid(),
             Username = request.Username,
-            Role = string.IsNullOrWhiteSpace(request.Role) ? "Customer" : request.Role
+            Role = normalizedRole
         };
 
-        // 3. Hasha lösenordet
+        // 4) Hasha lösenordet
         var hasher = new PasswordHasher<User>();
         user.PasswordHash = hasher.HashPassword(user, request.Password);
 
-        // 4. Spara användaren först (måste finnas innan vi kan sätta UserId i Customer/Interpreter)
+        // 5) Spara user först
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        // 5. Skapa Customer eller Interpreter beroende på roll
-        if (user.Role == "Customer")
+        // 6) Skapa profil beroende på roll (bara om den inte finns)
+        if (normalizedRole == "Customer")
         {
-            var customer = new Customer
+            var exists = await _context.Customers.AnyAsync(c => c.UserId == user.Id);
+            if (!exists)
             {
-                UserId = user.Id,
-                Name = request.Username,              // tills du har mer detaljer
-                ContactPerson = request.Username,
-                PhoneNumber = "N/A",
-                Email = "N/A",
-                Address = "N/A"
-            };
-
-            _context.Customers.Add(customer);
+                _context.Customers.Add(new Customer
+                {
+                    UserId = user.Id,
+                    Name = request.Username,
+                    ContactPerson = request.Username,
+                    PhoneNumber = "N/A",
+                    Email = "N/A",
+                    Address = "N/A"
+                });
+            }
         }
-        else if (user.Role == "Interpreter")
+        else // Interpreter
         {
-            var interpreter = new Interpreter
+            var exists = await _context.Interpreters.AnyAsync(i => i.UserId == user.Id);
+            if (!exists)
             {
-                UserId = user.Id,
-                FirstName = request.Username,         // tills du har FirstName/LastName i UserDto
-                LastName = "N/A",
-                PhoneNumber = "N/A",
-                Email = "N/A",
-                City = "N/A",
-                IsActive = true
-            };
-
-            _context.Interpreters.Add(interpreter);
+                _context.Interpreters.Add(new Interpreter
+                {
+                    UserId = user.Id,
+                    FirstName = request.Username,
+                    LastName = "N/A",
+                    PhoneNumber = "N/A",
+                    Email = "N/A",
+                    City = "N/A",
+                    IsActive = true
+                });
+            }
         }
 
-        // 6. Spara kopplad profil
         await _context.SaveChangesAsync();
-
         return user;
     }
 
@@ -112,7 +118,7 @@ public class AuthService : IAuthService
             .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
 
         if (user is null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-            return null; // ogiltig eller utgången token
+            return null;
 
         return await CreateTokenResponse(user);
     }
@@ -135,11 +141,15 @@ public class AuthService : IAuthService
         var issuer = _configuration["AppSettings:Issuer"];
         var audience = _configuration["AppSettings:Audience"];
 
+        // ✅ Se till att rollen aldrig blir fel i token
+        var role = (user.Role ?? "Customer").Trim();
+        if (role.Equals("Cusomer", StringComparison.OrdinalIgnoreCase)) role = "Customer";
+
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, user.Role ?? "Customer")
+            new Claim(ClaimTypes.Role, role)
         };
 
         var creds = new SigningCredentials(
@@ -164,8 +174,6 @@ public class AuthService : IAuthService
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
         await _context.SaveChangesAsync();
-
         return refreshToken;
     }
 }
-

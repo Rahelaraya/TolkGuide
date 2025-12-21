@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Test
+
+namespace Application.Dtos;
+
+public class CancelBookingRequestDto
 {
-    internal class Class1
-    {
-    }
+    public string? Reason { get; set; }
 }

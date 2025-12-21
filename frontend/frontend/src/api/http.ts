@@ -1,18 +1,27 @@
-const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
+import { getToken } from "../auth";
 
-export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  console.log("API BASE URL:", baseUrl);
-  console.log("Request:", `${baseUrl}${path}`);
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://localhost:7190";
 
-  const res = await fetch(`${baseUrl}${path}`, {
-    ...options,
+export async function apiFetch<T>(
+  path: string,
+  init: RequestInit = {}
+) {
+  const token = getToken();
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...init,
     headers: {
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-      ...(options.headers || {}),
+      ...(init.headers ?? {}),
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `HTTP ${res.status}`);
+  }
+
   return (await res.json()) as T;
 }
-

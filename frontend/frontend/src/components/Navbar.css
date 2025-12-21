@@ -1,0 +1,79 @@
+:root {
+  --pink-main: #ec4899;   /* huvudrosa */
+  --pink-hover: #db2777;  /* mörkare rosa */
+  --pink-soft: #fce7f3;   /* väldigt ljus rosa */
+  --text-dark: #374151;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--pink-soft);
+  background-color: #fff;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* TEXT-LOGGA */
+.brand {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--pink-main);
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: var(--pink-hover);
+}
+
+/* VANLIGA LÄNKAR */
+.navbar a {
+  color: var(--text-dark);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.navbar a:hover {
+  color: var(--pink-main);
+}
+
+/* AKTIV LÄNK */
+.navbar a.active {
+  color: var(--pink-main);
+  border-bottom: 2px solid var(--pink-main);
+  padding-bottom: 2px;
+}
+
+/* VÄLKOMMEN */
+.welcome {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+/* LOGGA UT */
+.logoutBtn {
+  background-color: var(--pink-main);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.logoutBtn:hover {
+  background-color: var(--pink-hover);
+}
+
