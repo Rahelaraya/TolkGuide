@@ -1,21 +1,38 @@
-const AUTH_EVENT = "auth_changed";
+const TOKEN_KEY = "accessToken";
 
-export function isLoggedIn() {
-  return !!localStorage.getItem("accessToken");
-}
+type Listener = () => void;
+const listeners = new Set<Listener>();
 
 export function notifyAuthChanged() {
-  window.dispatchEvent(new Event(AUTH_EVENT));
+  listeners.forEach((fn) => fn());
 }
 
-export function logout() {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("username"); 
+export function onAuthChanged(fn: Listener) {
+  listeners.add(fn);
+  return () => {
+    listeners.delete(fn);
+  };
+}
+
+
+export function setAuth(token: string, username: string, role: string) {
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem("username", username);
+  if (role) localStorage.setItem("role", role);
   notifyAuthChanged();
 }
 
-export function onAuthChanged(handler: () => void) {
-  window.addEventListener(AUTH_EVENT, handler);
-  return () => window.removeEventListener(AUTH_EVENT, handler);
+export function isLoggedIn() {
+  return !!localStorage.getItem(TOKEN_KEY);
+}
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function logout() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem("username");
+  localStorage.removeItem("role");
+  notifyAuthChanged();
 }
