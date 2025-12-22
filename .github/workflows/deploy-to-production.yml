@@ -22,11 +22,16 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
-      - name: Publish
-        run: dotnet publish ./YourSolution.sln -c Release -o ./publish
+      - name: Restore
+        run: dotnet restore Clean-API.sln
 
-      # TODO: ersätt detta med din riktiga production-deploy
+      - name: Build
+        run: dotnet build Clean-API.sln --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish Clean-API.sln --configuration Release --no-build -o ./publish
+
       - name: Deploy to Production Environment
         run: |
           echo "Deploying to Production Environment..."
-          # samma deploy som dev, fast mot prod-server
+          echo "Publish output is in ./publish"
