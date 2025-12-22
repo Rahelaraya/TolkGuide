@@ -1,17 +1,12 @@
-name: Deploy to Production
+name: Pull Request Checks
 
 on:
   pull_request:
-    branches:
-      - production
-    types:
-      - closed
+    branches: [main]
 
 jobs:
-  deploy-production:
+  pr-checks:
     runs-on: ubuntu-latest
-    environment: production
-    if: github.event.pull_request.merged == true
 
     steps:
       - name: Checkout code
@@ -22,16 +17,16 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
+      # Valfri (kan göra att CI blir röd): format-check
+      - name: Check code formatting (non-blocking)
+        continue-on-error: true
+        run: dotnet format Clean-API.sln --verbosity diagnostic --verify-no-changes
+
       - name: Restore
         run: dotnet restore Clean-API.sln
 
       - name: Build
         run: dotnet build Clean-API.sln --configuration Release --no-restore
 
-      - name: Publish
-        run: dotnet publish Clean-API.sln --configuration Release --no-build -o ./publish
-
-      - name: Deploy to Production Environment
-        run: |
-          echo "Deploying to Production Environment..."
-          echo "Publish output is in ./publish"
+      - name: Test
+        run: dotnet test Clean-API.sln --configuration Release --no-build --verbosity normal
