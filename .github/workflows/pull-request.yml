@@ -2,7 +2,7 @@ name: Pull Request Checks
 
 on:
   pull_request:
-    branches: [development, production, main]
+    branches: [main]
 
 jobs:
   pr-checks:
@@ -17,16 +17,16 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
-      # Valfri: gör format-checken "icke-blockerande" så CI inte blir röd i onödan
+      # Valfri (kan göra att CI blir röd): format-check
       - name: Check code formatting (non-blocking)
         continue-on-error: true
         run: dotnet format Clean-API.sln --verbosity diagnostic --verify-no-changes
 
-      - name: Restore dependencies
-        run: dotnet restore Clean-API.sln --disable-parallel
+      - name: Restore
+        run: dotnet restore Clean-API.sln
 
-      - name: Build solution
-        run: dotnet build Clean-API.sln --no-restore --configuration Release
+      - name: Build
+        run: dotnet build Clean-API.sln --configuration Release --no-restore
 
-      - name: Run tests
-        run: dotnet test Clean-API.sln --no-build --verbosity normal --no-restore --configuration Release
+      - name: Test
+        run: dotnet test Clean-API.sln --configuration Release --no-build --verbosity normal
