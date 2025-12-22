@@ -1,155 +1,120 @@
-📘 TolkGuide – Fullstack-applikation
-Projektbeskrivning
+# 📘 TolkGuide – Fullstack-applikation
 
-TolkGuide är en lokal fullstack-applikation utvecklad som en del av Kunskapskontroll 1 – Individuell Fullstack-applikation i kursen Objektorienterad Programmering – Avancerad.
+## Projektbeskrivning
+TolkGuide är en lokal fullstack-applikation utvecklad som en del av **Kunskapskontroll 1 – Individuell Fullstack-applikation** i kursen *Objektorienterad Programmering – Avancerad*.
 
-Applikationen gör det möjligt för:
+Applikationen är ett bokningssystem för tolktjänster där:
+- **Kunder** kan registrera sig, logga in och boka tolkar
+- **Tolkar** kan skapa och uppdatera sin profil samt hantera bokningar
 
-Kunder att registrera sig, logga in och boka tolkar
+Projektet är utvecklat individuellt och följer modern branschpraxis för en junior fullstack-utvecklare.
 
-Tolkar att skapa och uppdatera sin profil samt hantera bokningar
+---
 
-Projektet är byggt för att efterlikna hur en juniorutvecklare arbetar i ett verkligt projekt, med tydlig arkitektur, databasrelationer, tester och versionshantering.
+## Arkitekturöversikt
 
-Arkitekturöversikt
+Projektet är uppbyggt enligt en **Clean-ish Architecture** med tydlig ansvarsfördelning.
 
-Projektet är uppdelat enligt en Clean-ish Architecture med tydlig separation av ansvar:
+### Backend (.NET API)
+Projektet är uppdelat i flera lager:
 
-Backend (.NET API)
+- **API**
+  - Controllers och endpoints
+- **Application**
+  - DTOs
+  - Service-interfaces
+  - Affärslogik
+- **Domain**
+  - Domänmodeller (User, Customer, Interpreter, Booking, Language)
+- **Infrastructure**
+  - Entity Framework Core
+  - Databaskoppling
+  - Services
+  - Autentisering
 
-API
-Controllers och endpoints
+### Databas
+- SQL Server (lokal databas)
+- Entity Framework Core med migrationer
+- Relationer:4. Starta API-projektet
 
-Application
-DTOs, service-interfaces och affärslogik
+### Frontend
+1. Navigera till frontend-mappen
+2. Installera beroenden:
 
-Domain
-Domänmodeller (User, Customer, Interpreter, Booking, Language)
+  - One-to-many (Customer → Bookings, Interpreter → Bookings)
+  - Many-to-many (Interpreter ↔ Language via join-tabell)
 
-Infrastructure
-Databas (EF Core), services, autentisering och repositories
+### Frontend (React)
+- React med TypeScript
+- Rollbaserat flöde (Customer / Interpreter)
+- API-integration via HTTP-anrop
+- Loading- och error states
 
-Databas
+---
 
-SQL Server (lokal)
+## Startinstruktioner
 
-Entity Framework Core
+### Förutsättningar
+- .NET SDK
+- SQL Server / SSMS
+- Node.js och npm
+- Visual Studio / VS Code
 
-Relationer:
+### Backend
+1. Öppna lösningen i Visual Studio
+2. Kontrollera connection string i `appsettings.json`
+3. Kör migrationer:
+ Skapa en `.env`-fil och sätt API-url:
+4. Starta frontend:
 
-One-to-many (Customer → Bookings, Interpreter → Bookings)
+---
 
-Many-to-many (Interpreter ↔ Language)
+## Endpoints
 
-Frontend (React)
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
 
-React med TypeScript
+### Customers
+- `GET /api/customers/me`
+- `PUT /api/customers/me`
 
-Rollbaserat flöde (Customer / Interpreter)
+### Interpreters
+- `GET /api/interpreters/public`
+- `GET /api/interpreters/me`
+- `POST /api/interpreters`
+- `PUT /api/interpreters/me`
 
-API-integration via HTTP-anrop
+### Bookings
+- `POST /api/bookings`
+- `GET /api/bookings`
+- `PUT /api/bookings/{id}/cancel`
 
-Loading- och error-states
+---
 
-Startinstruktioner
-Förutsättningar
-
-.NET SDK
-
-SQL Server / SSMS
-
-Node.js + npm
-
-Visual Studio / VS Code
-
-Backend
-
-Öppna lösningen i Visual Studio
-
-Kontrollera connection string i appsettings.json
-
-Kör migrationer:
-
-Update-Database
-
-
-Starta API-projektet (https://localhost:xxxx)
-
-Frontend
-
-Gå till frontend-mappen
-
-Installera beroenden:
-
-npm install
-
-
-Skapa .env och sätt API-url:
-
-VITE_API_URL=https://localhost:xxxx
-
-
-Starta frontend:
-
-npm run dev
-
-Endpoints (exempel)
-Auth
-
-POST /api/auth/register
-
-POST /api/auth/login
-
-POST /api/auth/refresh
-
-Customers
-
-GET /api/customers/me
-
-PUT /api/customers/me
-
-Interpreters
-
-GET /api/interpreters/public
-
-GET /api/interpreters/me
-
-POST /api/interpreters
-
-PUT /api/interpreters/me
-
-Bookings
-
-POST /api/bookings
-
-GET /api/bookings
-
-PUT /api/bookings/{id}/cancel
-
-Tester
-
+## Tester
 Projektet innehåller enhetstester för:
+- AuthService
+- BookingService
 
-AuthService
+Tester är skrivna för att testa affärslogik och edge cases och är förberedda för att köras via CI.
 
-BookingService
+---
 
-Tester körs lokalt och är förberedda för att köras via CI (GitHub Actions).
+## Kända buggar / begränsningar
+- Frontend-validering är grundläggande
+- UI/UX är funktionellt men kan förbättras
+- Felmeddelanden från backend kan ibland visas tekniskt i frontend
 
-Kända buggar / begränsningar
+---
 
-Frontend-validering är grundläggande och kan förbättras
+## Sammanfattning
+Projektet uppfyller kraven för **Godkänt (G)** enligt kursens kravspecifikation och visar:
+- Fullstack-utveckling
+- Databasrelationer
+- Tydlig arkitektur
+- Enhetstester
+- Versionshantering med GitHub
 
-UI/UX är funktionellt men inte fullt optimerat
 
-Felmeddelanden från backend kan i vissa fall visas tekniskt i frontend
-
-Förbättringar för framtida version
-
-Pagination och filtrering i frontend
-
-Mer avancerad felhantering
-
-Integrationstester
-
-Förbättrad UI-design
