@@ -22,12 +22,17 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
-      # Bygg & publicera (ändra path/projekt vid behov)
-      - name: Publish
-        run: dotnet publish ./YourSolution.sln -c Release -o ./publish.github/workflows/deploy-to-development.yml
+      - name: Restore
+        run: dotnet restore Clean-API.sln
 
-      # TODO: ersätt detta med din riktiga deploy
+      - name: Build
+        run: dotnet build Clean-API.sln --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish Clean-API.sln --configuration Release --no-build -o ./publish
+
       - name: Deploy to Development Environment
         run: |
           echo "Deploying to Development Environment..."
-          # ex: scp/ssh/az webapp deploy/docker push osv.
+          echo "Publish output is in ./publish"
+
