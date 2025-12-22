@@ -100,6 +100,15 @@ Projektet innehåller enhetstester för:
 
 Tester är skrivna för att testa affärslogik och edge cases och är förberedda för att köras via CI.
 
+## CI / GitHub Actions
+Projektet använder GitHub Actions för Continuous Integration.
+Vid varje pull request körs automatiskt:
+- Restore
+- Build
+- Enhetstester
+
+Detta säkerställer att koden bygger korrekt och att tester passerar innan merge.
+
 ---
 
 ## Kända buggar / begränsningar
